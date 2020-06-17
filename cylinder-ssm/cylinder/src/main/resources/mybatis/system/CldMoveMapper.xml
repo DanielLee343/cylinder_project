@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.CldMoveMapper">
+
+    <resultMap type="CldMove" id="CldMoveResult">
+        <result property="cldmoveId" column="cldmove_id"/>
+        <result property="stampId" column="stamp_id"/>
+        <result property="toUserId" column="to_user_id"/>
+        <result property="fromUserName" column="from_user_name"/>
+        <result property="moveTime" column="move_time"/>
+        <result property="location" column="location"/>
+        <result property="userType" column="user_type"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="spec" column="spec"/>
+    </resultMap>
+
+    <sql id="selectCldMoveVo">
+        select cldmove_id, stamp_id, to_user_id, from_user_name, move_time, location, user_type from cld_move
+    </sql>
+
+    <select id="selectCldMoveList" parameterType="CldMove" resultMap="CldMoveResult">
+        select 	t.stamp_id, nick_name, from_user_name, move_time, location, spec
+        from (select * FROM cld_move ORDER BY move_time DESC ) t, sys_user, cld
+        <where>
+            sys_user.user_id = t.to_user_id
+            and cld.stamp_id = t.stamp_id
+            <if test="stampId != null  and stampId != ''">and t.stamp_id = #{stampId}</if>
+            <if test="toUserId != null ">and to_user_id = #{toUserId}</if>
+            <if test="fromUserName != null  and fromUserName != ''">and from_user_name like concat('%', #{fromUserName},
+                '%')
+            </if>
+            <if test="location != null  and location != ''">and location = #{location}</if>
+            <if test="userType != null  and userType != ''">and user_type = #{userType}</if>
+        </where>
+        group by t.stamp_id
+    </select>
+
+    <select id="selectCldMoveById" parameterType="Long" resultMap="CldMoveResult">
+        <include refid="selectCldMoveVo"/>
+        where cldmove_id = #{cldmoveId}
+    </select>
+
+    <select id="selectToUserName" parameterType="String" resultType="String">
+        select u.nick_name from cld_move t, sys_user u
+        where t.stamp_id = #{stampId}
+        and t.to_user_id = u.user_id
+        ORDER BY t.move_time DESC LIMIT 0,1
+    </select>
+
+    <insert id="insertCldMove" parameterType="CldMove" useGeneratedKeys="true" keyProperty="cldmoveId">
+        insert into cld_move
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">stamp_id,</if>
+            <if test="toUserId != null ">to_user_id,</if>
+            <if test="fromUserName != null  and fromUserName != ''">from_user_name,</if>
+            <if test="moveTime != null ">move_time,</if>
+            <if test="location != null  and location != ''">location,</if>
+            <if test="userType != null  and userType != ''">user_type,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">#{stampId},</if>
+            <if test="toUserId != null ">#{toUserId},</if>
+            <if test="fromUserName != null  and fromUserName != ''">#{fromUserName},</if>
+            <if test="moveTime != null ">#{moveTime},</if>
+            <if test="location != null  and location != ''">#{location},</if>
+            <if test="userType != null  and userType != ''">#{userType},</if>
+        </trim>
+    </insert>
+
+    <update id="updateCldMove" parameterType="CldMove">
+        update cld_move
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">stamp_id = #{stampId},</if>
+            <if test="toUserId != null ">to_user_id = #{toUserId},</if>
+            <if test="fromUserName != null  and fromUserName != ''">from_user_name = #{fromUserName},</if>
+            <if test="moveTime != null ">move_time = #{moveTime},</if>
+            <if test="location != null  and location != ''">location = #{location},</if>
+        </trim>
+        where cldmove_id = #{cldmoveId}
+    </update>
+
+    <delete id="deleteCldMoveById" parameterType="Long">
+        delete from cld_move where cldmove_id = #{cldmoveId}
+    </delete>
+
+    <delete id="deleteCldMoveByIds" parameterType="String">
+        delete from cld_move where cldmove_id in
+        <foreach item="cldmoveId" collection="array" open="(" separator="," close=")">
+            #{cldmoveId}
+        </foreach>
+    </delete>
+
+    <!--根据stampId查找轨迹-->
+    <select id="selectCldRoutes" parameterType="CldMove" resultMap="CldMoveResult">
+        <include refid="selectCldMoveVo"/>
+        <where>
+            move_time between #{selectStartTime} and #{selectEndTime}
+            <if test="stampId != null  and stampId != ''">and stamp_id = #{stampId}</if>
+            <if test="toUserId != null ">and to_user_id = #{toUserId}</if>
+            <if test="fromUserName != null  and fromUserName != ''">and from_user_name like concat('%', #{fromUserName},
+                '%')
+            </if>
+            <if test="location != null  and location != ''">and location = #{location}</if>
+            <if test="userType != null  and userType != ''">and user_type = #{userType}</if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.SysOrderMapper">
+
+    <resultMap type="SysOrder" id="SysOrderResult">
+        <result property="orderId" column="order_id"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="clientId" column="client_id"/>
+        <result property="toStaffIdFirst" column="to_staff_id_first"/>
+        <result property="toStaffIdSecond" column="to_staff_id_second"/>
+        <result property="currentStaffId" column="current_staff_id"/>
+        <result property="orderStatusFirst" column="order_status_first"/>
+        <result property="orderStatusSecond" column="order_status_second"/>
+        <result property="amount" column="amount"/>
+        <result property="createDate" column="create_date"/>
+        <result property="acceptDate" column="accept_date"/>
+        <result property="toHouseDate" column="to_house_date"/>
+        <result property="toStaffName" column="to_staff_name"/>
+        <result property="currentStaffName" column="current_staff_name"/>
+        <result property="clientName" column="client_name"/>
+        <result property="fee" column="fee"/>
+        <result property="clientLocation" column="client_location"/>
+        <result property="clientNum" column="client_num"/>
+    </resultMap>
+
+    <sql id="selectSysOrderVo">
+        select order_id, client_name, o.client_id, to_staff_id_first, to_staff_id_second, current_staff_id, fee,
+        order_num, order_status_first, order_status_second, amount, create_date, accept_date, to_house_date,
+        client_num, client_location,
+        s.user_name as current_staff_name
+        from sys_order o
+        left JOIN sys_user u1 on u1.user_id = o.to_staff_id_first
+        left join sys_user u2 on u2.user_id = o.to_staff_id_second
+        left join sys_user s on s.user_id = o.current_staff_id
+        left join client c on c.client_id = o.client_id
+    </sql>
+
+    <!--    管理员查看所有订单-->
+    <select id="selectSysOrderList" parameterType="SysOrder" resultMap="SysOrderResult">
+        <include refid="selectSysOrderVo"/>
+        <where>
+            <if test="orderNum != null ">and order_num like concat('%', #{orderNum}, '%')</if>
+            <if test="clientName != null ">and client_name like concat('%', #{clientName}, '%')</if>
+            <if test="orderStatusFirst != null">and order_status_first = #{orderStatusFirst}</if>
+            <if test="currentStaffName != null">and s.user_name like concat('%', #{currentStaffName}, '%')</if>
+            <if test="fee != null">and fee = #{fee}</if>
+            <if test="amount != null ">and amount = #{amount}</if>
+            <if test="acceptDate != null ">and date_format(accept_date,'%Y-%m-%d') =
+                date_format(#{acceptDate},'%Y-%m-%d')
+            </if>
+            <if test="toHouseDate != null ">and date_format(to_house_date,'%Y-%m-%d') =
+                date_format(#{toHouseDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStampIdByOrderNum" parameterType="String" resultType="String">
+        select stamp_id from order_cld
+        where order_num = #{orderNum}
+    </select>
+    <!--    运输工查看当前订单-->
+    <select id="getOrderListByDeliverer" parameterType="SysOrder" resultMap="SysOrderResult">
+        <include refid="selectSysOrderVo"/>
+        <where>
+            <if test="toStaffIdFirst != null and orderStatusFirst != null">
+                (to_staff_id_first = #{toStaffIdFirst}
+                and order_status_first = #{orderStatusFirst})
+            </if>
+            <if test="orderStatusSecond != null and toStaffIdSecond != null">
+                or (to_staff_id_second = #{toStaffIdSecond}
+                and order_status_second = #{orderStatusSecond})
+            </if>
+            <if test="currentStaffId != null ">and current_staff_id = #{currentStaffId}</if>
+        </where>
+
+    </select>
+
+    <!--    客户查看当前订单-->
+    <select id="getCurOrderByClient" parameterType="Integer" resultMap="SysOrderResult">
+        select o.order_num, c.client_name, c.client_location, c.client_num, o.accept_date,
+        o.order_status_second, o.amount, o.fee, o.create_date
+        from client c, sys_order o
+        where c.client_id = o.client_id
+        and o.order_status_second != 2
+        and c.client_id = #{clientId}
+    </select>
+
+    <!--    客户查看历史订单-->
+    <select id="getHisOrderByClient" parameterType="Integer" resultMap="SysOrderResult">
+        select o.order_num, c.client_name, c.client_location, c.client_num, o.accept_date,
+        o.order_status_second, o.amount, o.fee, o.to_house_date
+        from client c, sys_order o
+        where c.client_id = o.client_id
+        and o.order_status_second = 2
+        and c.client_id = #{clientId}
+    </select>
+
+    <select id="selectSysOrderById" parameterType="Integer" resultMap="SysOrderResult">
+        <include refid="selectSysOrderVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <select id="selectFirstOrderStatusByOrderNum" parameterType="String" resultType="String">
+        select order_status_first from sys_order
+        where order_num = #{orderNum}
+    </select>
+
+    <select id="selectSecondOrderStatusByOrderNum" parameterType="String" resultType="String">
+        select order_status_second from sys_order
+        where order_num = #{orderNum}
+    </select>
+    <!--    新建订单-->
+    <insert id="insertSysOrder" parameterType="SysOrder" useGeneratedKeys="true" keyProperty="orderId">
+        insert into sys_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null ">order_num,</if>
+            /*系统根据规则生成*/
+            <if test="clientId != null ">client_id,</if>
+            /*用户前端获取*/
+            <if test="toStaffIdFirst != null ">to_staff_id_first,</if>
+            <if test="toStaffIdSecond != null ">to_staff_id_second,</if>
+            /*系统查看当前没有在忙的员工生成*/
+            <!--            <if test="currentStaffId != null ">current_staff_id,</if>       /*默认0*/-->
+            <!--<if test="orderStatus != null  and orderStatus != ''">order_status,</if>-->       /*默认0*/
+            <if test="amount != null ">amount,</if>
+            /*前端获取 list.length()*/
+            <!--<if test="acceptDate != null ">accept_date,</if>-->    /*默认空*/
+            <!--<if test="toHouseDate != null ">to_house_date,</if>-->          /*默认空*/
+            <if test="fee != null ">fee,</if>
+            <if test="createDate != null ">create_date,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null ">#{orderNum},</if>
+            <if test="clientId != null ">#{clientId},</if>
+            <if test="toStaffIdFirst != null ">#{toStaffIdFirst},</if>
+            <if test="toStaffIdSecond != null ">#{toStaffIdSecond},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="fee != null ">#{fee},</if>
+            <if test="createDate != null ">#{createDate},</if>
+        </trim>
+    </insert>
+
+    <!--    生成订单号-->
+    <select id="generateOrderNum" resultType="java.lang.String">
+        select generateOrderNum() from DUAL
+    </select>
+
+    <!--    选择当前没有在忙的员工-->
+    <select id="chooseFreeDelivererId" resultType="Integer">
+        select u.user_id from sys_user u
+        LEFT JOIN sys_user_role ur on u.user_id = ur.user_id
+        WHERE ur.role_id=3
+        and u.is_delivering=0
+        and (2>(select count(*) from sys_order o WHERE o.to_staff_id_first = u.user_id and o.order_status_first = 0));
+    </select>
+
+    <select id="selectClientIdByOrderNum" parameterType="String" resultType="Integer">
+        select client_id
+        from sys_order
+        where order_num = #{orderNum}
+    </select>
+
+    <update id="updateSysOrder" parameterType="SysOrder">
+        update sys_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="clientId != null ">client_id = #{clientId},</if>
+            <if test="toStaffIdFirst != null ">to_staff_id_first = #{toStaffIdFirst},</if>
+            <if test="toStaffIdSecond != null ">to_staff_id_second = #{toStaffIdSecond},</if>
+            <if test="currentStaffId != null ">current_staff_id = #{currentStaffId},</if>
+            <if test="orderStatusFirst != null">order_status_first = #{orderStatusFirst},</if>
+            <if test="orderStatusSecond != null">order_status_second = #{orderStatusSecond},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="fee != null ">fee = #{fee},</if>
+            <if test="acceptDate != null ">accept_date = #{acceptDate},</if>
+            <if test="toHouseDate != null ">to_house_date = #{toHouseDate},</if>
+            <if test="createDate != null ">create_date = #{createDate},</if>
+        </trim>
+        where order_num = #{orderNum}
+    </update>
+
+    <delete id="deleteSysOrderById" parameterType="Integer">
+        delete from sys_order where id = #{id}
+    </delete>
+
+    <delete id="deleteSysOrderByIds" parameterType="String">
+        delete from sys_order where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

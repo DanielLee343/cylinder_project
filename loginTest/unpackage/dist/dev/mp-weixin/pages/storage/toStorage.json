@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "钢瓶入库",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "neil-modal": "/components/neil-modal/neil-modal",
+    "uni-fab": "/components/uni-fab/uni-fab"
+  }
+}

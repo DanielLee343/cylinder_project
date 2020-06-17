@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.OrderItemMapper">
+    
+    <resultMap type="OrderItem" id="OrderItemResult">
+        <result property="orderItemId"    column="order_item_id"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="cldSpec"    column="cld_spec"    />
+        <result property="cldAmount"    column="cld_amount"    />
+    </resultMap>
+
+    <sql id="selectOrderItemVo">
+        select order_num, cld_spec, cld_amount from order_item
+    </sql>
+
+    <select id="selectOrderItemList" parameterType="String" resultMap="OrderItemResult">
+        <include refid="selectOrderItemVo"/>
+        where order_num = #{orderNum}
+    </select>
+    
+    <select id="selectOrderItemById" parameterType="Long" resultMap="OrderItemResult">
+        <include refid="selectOrderItemVo"/>
+        where order_item_id = #{orderItemId}
+    </select>
+        
+    <insert id="insertOrderItem" parameterType="OrderItem" useGeneratedKeys="true" keyProperty="orderItemId">
+        insert into order_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">order_num,</if>
+            <if test="cldSpec != null  and cldSpec != ''">cld_spec,</if>
+            <if test="cldAmount != null ">cld_amount,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">#{orderNum},</if>
+            <if test="cldSpec != null  and cldSpec != ''">#{cldSpec},</if>
+            <if test="cldAmount != null ">#{cldAmount},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrderItem" parameterType="OrderItem">
+        update order_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">order_num = #{orderNum},</if>
+            <if test="cldSpec != null  and cldSpec != ''">cld_spec = #{cldSpec},</if>
+            <if test="cldAmount != null ">cld_amount = #{cldAmount},</if>
+        </trim>
+        where order_item_id = #{orderItemId}
+    </update>
+
+    <delete id="deleteOrderItemById" parameterType="Long">
+        delete from order_item where order_item_id = #{orderItemId}
+    </delete>
+
+    <delete id="deleteOrderItemByIds" parameterType="String">
+        delete from order_item where order_item_id in 
+        <foreach item="orderItemId" collection="array" open="(" separator="," close=")">
+            #{orderItemId}
+        </foreach>
+    </delete>
+    
+</mapper>

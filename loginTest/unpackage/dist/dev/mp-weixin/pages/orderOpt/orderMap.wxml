@@ -1,0 +1,1 @@
+<view class="content"><block wx:if="{{showMap}}"><map style="width:100%;height:300px;" id="map1" latitude="{{lat}}" longitude="{{lng}}" markers="{{markers}}" polyline="{{polyline}}"></map></block></view>

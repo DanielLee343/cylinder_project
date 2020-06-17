@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.OrderCldMapper">
+
+    <resultMap type="OrderCld" id="OrderCldResult">
+        <result property="orderCldId" column="order_cld_id"/>
+        <result property="orderNum" column="order_num"/>
+        <result property="stampId" column="stamp_id"/>
+        <result property="stationName" column="station_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="spec" column="spec"/>
+        <result property="price" column="price"/>
+        <result property="entryTime" column="entry_time"/>
+        <result property="comment" column="comment"/>
+        <result property="valveNum" column="valve_num"/>
+    </resultMap>
+
+    <sql id="selectOrderCldVo">
+        select order_num,oc.stamp_id, station_name, user_name, spec, price, entry_time, comment
+        from order_cld oc, cld c, sys_user u, station s
+    </sql>
+
+    <!--    查看订单详情by admin-->
+    <select id="selectOrderDetail" parameterType="String" resultMap="OrderCldResult">
+        <include refid="selectOrderCldVo"/>
+        <!--        <where>  -->
+        <!--            <if test="orderNum != null  and orderNum != ''"> and order_num = #{orderNum}</if>-->
+        <!--            <if test="stampId != null  and stampId != ''"> and stamp_id = #{stampId}</if>-->
+        <!--        </where>-->
+        where oc.stamp_id = c.stamp_id
+        and c.station_id = s.station_id
+        and c.entry_id = u.user_id
+        and order_num = #{orderNum}
+    </select>
+
+    <!--    查出所有这个订单所有的钢瓶-->
+    <select id="selectOrderCldById" parameterType="Integer" resultMap="OrderCldResult">
+        <include refid="selectOrderCldVo"/>
+        where order_cld_id = #{orderCldId}
+    </select>
+
+    <select id="selectOrderCldIdByOrderNum" parameterType="String" resultType="Integer">
+        select order_cld_id from order_cld
+        where order_num = #{order_num}
+        LIMIT 0,1
+    </select>
+    <!--    新增订单钢瓶-->
+    <insert id="insertOrderCld" parameterType="OrderCld" useGeneratedKeys="true" keyProperty="orderCldId">
+        insert into order_cld
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">order_num,</if>
+            <if test="stampId != null  and stampId != ''">stamp_id,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">#{orderNum},</if>
+            <if test="stampId != null  and stampId != ''">#{stampId},</if>
+        </trim>
+    </insert>
+
+    <update id="updateOrderCld" parameterType="OrderCld">
+        update order_cld
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderNum != null  and orderNum != ''">order_num = #{orderNum},</if>
+            <if test="stampId != null  and stampId != ''">stamp_id = #{stampId},</if>
+        </trim>
+        where order_cld_id = #{orderCldId}
+    </update>
+
+    <delete id="deleteOrderCldById" parameterType="Integer">
+        delete from order_cld where order_cld_id = #{orderCldId}
+    </delete>
+
+    <delete id="deleteOrderCldByIds" parameterType="String">
+        delete from order_cld where order_cld_id in
+        <foreach item="orderCldId" collection="array" open="(" separator="," close=")">
+            #{orderCldId}
+        </foreach>
+    </delete>
+
+</mapper>

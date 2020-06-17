@@ -1,0 +1,31 @@
+package com.bestsinuo.websocket.controller;
+
+import com.bestsinuo.websocket.config.WebSocketServer;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.io.IOException;
+
+@RestController
+public class SendMessageController {
+
+    @GetMapping("index")
+    public ResponseEntity<String> index() {
+        return ResponseEntity.ok("请求成功");
+    }
+
+    @GetMapping("page")
+    public ModelAndView page() {
+        return new ModelAndView("websocket");
+    }
+
+    @RequestMapping("/message/{toUserId}")
+    public ResponseEntity<String> sendMessage(String data, @PathVariable String toUserId) throws IOException {
+        WebSocketServer.sendInfo(data, toUserId);
+        return ResponseEntity.ok("MSG SEND SUCCESS");
+    }
+}

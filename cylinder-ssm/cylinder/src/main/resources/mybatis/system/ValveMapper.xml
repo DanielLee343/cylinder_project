@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.ValveMapper">
+
+    <resultMap type="Valve" id="ValveResult">
+        <result property="valveId" column="valve_id"/>
+        <result property="valveNum" column="valve_num"/>
+        <result property="stampId" column="stamp_id"/>
+        <result property="prodCmp" column="prod_cmp"/>
+        <result property="valveCreateDate" column="valve_create_date"/>
+        <result property="ctfUrl" column="ctf_url"/>
+        <result property="valveEntryId" column="valve_entry_id"/>
+        <result property="valveEntryTime" column="valve_entry_time"/>
+        <result property="userName" column="user_name"/>
+        <result property="valveComment" column="valve_comment"/>
+        <result property="spec" column="spec"/>
+        <result property="price" column="price"/>
+        <result property="createDate" column="create_date"/>
+        <result property="comment" column="comment"/>
+        <result property="isFull" column="is_full"/>
+    </resultMap>
+
+    <sql id="selectValveVo">
+        select valve_id, valve_num, stamp_id, prod_cmp, valve_create_date,
+        ctf_url, valve_entry_id, valve_entry_time, valve_comment, user_name
+        from valve, sys_user
+    </sql>
+
+    <!--    通过valve_num查出stampId-->
+    <select id="selectStampIdByValveNum" parameterType="String" resultMap="ValveResult">
+        select valve.stamp_id, create_date, spec, price, comment,
+        valve_num, prod_cmp, valve_create_date, valve_comment, is_full
+        from cld, valve, cld_dyn
+        where cld.stamp_id = valve.stamp_id
+        and cld.stamp_id = cld_dyn.dyn_stamp_id
+        and valve_num = #{valveNum}
+    </select>
+
+    <select id="selectValveList" parameterType="Valve" resultMap="ValveResult">
+        <include refid="selectValveVo"/>
+        <where>
+            valve.valve_entry_id = sys_user.user_id
+            <if test="valveNum != null  and valveNum != ''">and valve_num like concat('%', #{valveNum}, '%')</if>
+            <if test="stampId != null  and stampId != ''">and stamp_id like concat('%', #{stampId}, '%')</if>
+            <if test="prodCmp != null  and prodCmp != ''">and prod_cmp like concat('%', #{prodCmp}, '%')</if>
+            <if test="valveCreateDate != null ">and valve_create_date = #{valveCreateDate}</if>
+            <if test="ctfUrl != null  and ctfUrl != ''">and ctf_url = #{ctfUrl}</if>
+            <if test="userName != null ">and user_name like "%"#{userName}"%"</if>
+            <if test="valveEntryTime != null ">and date_format(valve_entry_time,'%Y-%m-%d') =
+                date_format(#{valveEntryTime},'%Y-%m-%d')
+            </if>
+            <if test="valveComment != null  and valveComment != ''">and valve_comment like concat('%', #{valveComment},
+                '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectValveById" parameterType="Integer" resultMap="ValveResult">
+        <include refid="selectValveVo"/>
+        where valve.valve_entry_id = sys_user.user_id
+        and valve_id = #{valveId}
+    </select>
+
+    <!--选择未绑定的钢瓶-->
+    <select id="selectNotBindCld" resultType="String">
+        select stamp_id from cld
+        where is_bind = '0'
+    </select>
+
+    <insert id="insertValve" parameterType="Valve" useGeneratedKeys="true" keyProperty="valveId">
+        insert into valve
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="valveNum != null  and valveNum != ''">valve_num,</if>
+            <if test="stampId != null  and stampId != ''">stamp_id,</if>
+            <if test="prodCmp != null  and prodCmp != ''">prod_cmp,</if>
+            <if test="valveCreateDate != null ">valve_create_date,</if>
+            <if test="ctfUrl != null  and ctfUrl != ''">ctf_url,</if>
+            <if test="valveEntryId != null ">valve_entry_id,</if>
+            <if test="valveEntryTime != null ">valve_entry_time,</if>
+            <if test="valveComment != null  and valveComment != ''">valve_comment,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="valveNum != null  and valveNum != ''">#{valveNum},</if>
+            <if test="stampId != null  and stampId != ''">#{stampId},</if>
+            <if test="prodCmp != null  and prodCmp != ''">#{prodCmp},</if>
+            <if test="valveCreateDate != null ">#{valveCreateDate},</if>
+            <if test="ctfUrl != null  and ctfUrl != ''">#{ctfUrl},</if>
+            <if test="valveEntryId != null ">#{valveEntryId},</if>
+            <if test="valveEntryTime != null ">#{valveEntryTime},</if>
+            <if test="valveComment != null  and comment != ''">#{valveComment},</if>
+        </trim>
+    </insert>
+
+    <delete id="deleteValveById" parameterType="Integer">
+        delete from valve where valve_id = #{valveId}
+    </delete>
+
+    <delete id="deleteValveByIds" parameterType="String">
+        delete from valve where valve_id in
+        <foreach item="valveId" collection="array" open="(" separator="," close=")">
+            #{valveId}
+        </foreach>
+    </delete>
+
+    <update id="updateValve" parameterType="Valve">
+        update valve
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stampId != null ">stamp_id = #{stampId},</if>
+            <if test="prodCmp != null ">prod_cmp = #{prodCmp},</if>
+            <if test="valveCreateDate != null ">valve_create_date = #{valveCreateDate},</if>
+            <if test="valveEntryId != null">valve_entry_id = #{valveEntryId},</if>
+            <if test="valveEntryTime != null ">valve_entry_time = #{valveEntryTime},</if>
+            <if test="valveComment != null">valve_comment = #{valveComment},</if>
+        </trim>
+        where valve_num = #{valveNum}
+    </update>
+
+    <update id="bindCV" parameterType="Valve">
+        update valve
+        set valve.stamp_id = #{stampId}
+        where valve.valve_num = #{valveNum}
+    </update>
+
+    <update id="unbindCV" parameterType="String">
+        update valve
+        set stamp_id = ''
+        where stamp_id = #{stampId}
+    </update>
+
+</mapper>

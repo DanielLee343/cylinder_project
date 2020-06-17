@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "气阀详情",
+  "usingComponents": {
+    "uni-drawer": "/components/uni-drawer/uni-drawer",
+    "uni-indexed-list": "/components/uni-indexed-list/uni-indexed-list"
+  }
+}

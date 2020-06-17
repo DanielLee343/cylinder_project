@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.CldDynMapper">
+    <resultMap id="CldDynResult" type="CldDyn">
+        <result property="id" column="id"/>
+        <result property="dynStampId" column="dyn_stamp_id"/>
+        <result property="isFull" column="is_full"/>
+        <result property="refillNum" column="refill_num"/>
+        <result property="inStock" column="in_stock"/>
+    </resultMap>
+
+    <sql id="selectCldDynVo">
+        select dyn_stamp_id, is_full, refill_num, in_stock
+        from cld_dyn
+    </sql>
+
+    <select id="selectCldDynList" parameterType="CldDyn" resultMap="CldDynResult">
+        <include refid="selectCldDynVo"/>
+        <where>
+            <if test="dynStampId != null  and dynStampId != ''">and dyn_stamp_id like "%"#{dynStampId}"%"</if>
+            <if test="isFull != null  and isFull != ''">and is_full = #{isFull}</if>
+            <if test="refillNum != null  and refillNum != ''">and refill_num = #{refillNum}</if>
+            <if test="inStock != null  and inStock != ''">and in_stock = #{inStock}</if>
+        </where>
+    </select>
+
+    <select id="selectCldDynById" parameterType="String" resultMap="CldDynResult">
+        <include refid="selectCldDynVo"/>
+        where dyn_stamp_id = #{dynStampId}
+    </select>
+
+    <update id="updateCldDyn" parameterType="CldDyn">
+        update cld_dyn
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="isFull != null ">is_full = #{isFull},</if>
+            <if test="refillNum != null ">refill_num = #{refillNum},</if>
+            <if test="inStock != null ">in_stock = #{inStock},</if>
+        </trim>
+        where dyn_stamp_id = #{dynStampId}
+    </update>
+
+    <update id="refillCld" parameterType="String">
+        update cld_dyn set refill_num = refill_num + 1, is_full = '1' where dyn_stamp_id = #{dynStampId}
+    </update>
+
+    <insert id="insertCldDyn" parameterType="CldDyn" useGeneratedKeys="true" keyProperty="id">
+        insert into cld_dyn
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="dynStampId != null  and dynStampId != ''">dyn_stamp_id,</if>
+            <if test="isFull != null  and isFull != ''">is_full,</if>
+            <if test="inStock != null  and inStock != ''">in_stock,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="dynStampId != null  and dynStampId != ''">#{dynStampId},</if>
+            <if test="isFull != null  and isFull != ''">#{isFull},</if>
+            <if test="inStock != null  and inStock != ''">#{inStock},</if>
+        </trim>
+    </insert>
+
+</mapper>

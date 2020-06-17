@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "当前订单",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "uni-segmented-control": "/components/uni-segmented-control/uni-segmented-control",
+    "uni-drawer": "/components/uni-drawer/uni-drawer",
+    "neil-modal": "/components/neil-modal/neil-modal",
+    "uni-fab": "/components/uni-fab/uni-fab"
+  }
+}

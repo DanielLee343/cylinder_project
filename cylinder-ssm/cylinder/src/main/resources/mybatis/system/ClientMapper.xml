@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.ClientMapper">
+    
+    <resultMap type="Client" id="ClientResult">
+        <result property="clientId"    column="client_id"    />
+        <result property="clientAccount"    column="client_account"    />
+        <result property="clientPwd"    column="client_pwd"    />
+        <result property="clientLocation"    column="client_location"    />
+        <result property="clientName"    column="client_name"    />
+        <result property="clientGender"    column="client_gender"    />
+        <result property="clientNum"    column="client_num"    />
+        <result property="isDelete"    column="is_delete"    />
+    </resultMap>
+
+    <sql id="selectClientVo">
+        select client_id, client_account, client_pwd, client_location, client_name, client_gender, client_num, is_delete from client
+    </sql>
+
+    <select id="selectClientList" parameterType="Client" resultMap="ClientResult">
+        <include refid="selectClientVo"/>
+        <where>  
+            <if test="clientAccount != null  and clientAccount != ''"> and client_account = #{clientAccount}</if>
+            <if test="clientPwd != null  and clientPwd != ''"> and client_pwd = #{clientPwd}</if>
+            <if test="clientLocation != null  and clientLocation != ''"> and client_location = #{clientLocation}</if>
+            <if test="clientName != null  and clientName != ''"> and client_name like concat('%', #{clientName}, '%')</if>
+            <if test="clientGender != null  and clientGender != ''"> and client_gender = #{clientGender}</if>
+            <if test="clientNum != null  and clientNum != ''"> and client_num = #{clientNum}</if>
+            <if test="isDelete != null  and isDelete != ''"> and is_delete = #{isDelete}</if>
+        </where>
+    </select>
+    
+    <select id="selectClientById" parameterType="Integer" resultMap="ClientResult">
+        <include refid="selectClientVo"/>
+        where client_id = #{clientId}
+    </select>
+    <select id="selectClientByNum" parameterType="String" resultMap="ClientResult">
+        <include refid="selectClientVo"/>
+
+            where client_num = #{clientNum}
+    </select>
+        
+    <insert id="insertClient" parameterType="Client" useGeneratedKeys="true" keyProperty="clientId">
+        insert into client
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="clientAccount != null  and clientAccount != ''">client_account,</if>
+            <if test="clientPwd != null  and clientPwd != ''">client_pwd,</if>
+            <if test="clientLocation != null  and clientLocation != ''">client_location,</if>
+            <if test="clientName != null  and clientName != ''">client_name,</if>
+            <if test="clientGender != null  and clientGender != ''">client_gender,</if>
+            <if test="clientNum != null  and clientNum != ''">client_num,</if>
+            <if test="isDelete != null  and isDelete != ''">is_delete,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="clientAccount != null  and clientAccount != ''">#{clientAccount},</if>
+            <if test="clientPwd != null  and clientPwd != ''">#{clientPwd},</if>
+            <if test="clientLocation != null  and clientLocation != ''">#{clientLocation},</if>
+            <if test="clientName != null  and clientName != ''">#{clientName},</if>
+            <if test="clientGender != null  and clientGender != ''">#{clientGender},</if>
+            <if test="clientNum != null  and clientNum != ''">#{clientNum},</if>
+            <if test="isDelete != null  and isDelete != ''">#{isDelete},</if>
+         </trim>
+    </insert>
+
+    <update id="updateClient" parameterType="Client">
+        update client
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="clientAccount != null  and clientAccount != ''">client_account = #{clientAccount},</if>
+            <if test="clientPwd != null  and clientPwd != ''">client_pwd = #{clientPwd},</if>
+            <if test="clientLocation != null  and clientLocation != ''">client_location = #{clientLocation},</if>
+            <if test="clientName != null  and clientName != ''">client_name = #{clientName},</if>
+            <if test="clientGender != null  and clientGender != ''">client_gender = #{clientGender},</if>
+            <if test="clientNum != null  and clientNum != ''">client_num = #{clientNum},</if>
+            <if test="isDelete != null  and isDelete != ''">is_delete = #{isDelete},</if>
+        </trim>
+        where client_id = #{clientId}
+    </update>
+
+    <delete id="deleteClientById" parameterType="Integer">
+        delete from client where client_id = #{clientId}
+    </delete>
+
+    <delete id="deleteClientByIds" parameterType="String">
+        delete from client where client_id in 
+        <foreach item="clientId" collection="array" open="(" separator="," close=")">
+            #{clientId}
+        </foreach>
+    </delete>
+    
+</mapper>

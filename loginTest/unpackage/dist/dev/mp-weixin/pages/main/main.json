@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "主页",
+  "usingComponents": {
+    "neil-modal": "/components/neil-modal/neil-modal"
+  }
+}

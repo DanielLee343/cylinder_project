@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "钢瓶管理",
+  "usingComponents": {
+    "xfl-select": "/components/xfl-select/xfl-select",
+    "uni-search-bar": "/components/uni-search-bar/uni-search-bar"
+  }
+}

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.CldMapper">
+
+    <resultMap type="Cld" id="CldResult">
+        <result property="id" column="id"/>
+        <result property="stampId" column="stamp_id"/>
+        <result property="stationId" column="station_id"/>
+        <result property="createDate" column="create_date"/>
+        <result property="disposeDate" column="dispose_date"/>
+        <result property="initWeight" column="init_weight"/>
+        <result property="entryId" column="entry_id"/>
+        <result property="spec" column="spec"/>
+        <result property="price" column="price"/>
+        <result property="comment" column="comment"/>
+        <result property="userName" column="user_name"/>
+        <result property="stationName" column="station_name"/>
+        <result property="entryTime" column="entry_time"/>
+        <result property="isBind" column="is_bind"/>
+    </resultMap>
+
+
+    <sql id="selectCldVo">
+        select id,
+               stamp_id,
+               station_name,
+               create_date,
+               dispose_date,
+               init_weight,
+               user_name,
+               spec,
+               price,
+               entry_time,
+               comment,
+               entry_id,
+               is_bind
+        from cld,
+             sys_user,
+             station
+    </sql>
+
+
+    <!--    以下是admin操作-->
+    <select id="selectCldList" parameterType="Cld" resultMap="CldResult">
+        <include refid="selectCldVo"/>
+        <where>
+            cld.entry_id = sys_user.user_id
+            and cld.station_id = station.station_id
+            <!--            <if test="id != null ">and id = #{id}</if>-->
+            <if test="stampId != null  and stampId != ''">and stamp_id like "%"#{stampId}"%"</if>
+            <if test="stationName != null ">and station_name like "%"#{stationName}"%"</if>
+            <if test="createDate != null ">and create_date = #{createDate}</if>
+            <if test="disposeDate != null ">and dispose_date = #{disposeDate}</if>
+            <if test="initWeight != null  and initWeight != ''">and init_weight = #{initWeight}</if>
+            <if test="userName != null ">and user_name like "%"#{userName}"%"</if>
+            <if test="spec != null  and spec != ''">and spec = #{spec}</if>
+            <if test="price != null ">and price = #{price}</if>
+            <if test="entryTime != null ">and date_format(entry_time,'%Y-%m-%d') =
+                date_format(#{entryTime},'%Y-%m-%d')
+            </if>
+            <if test="comment != null  and comment != ''">and comment like "%"#{comment}"%"</if>
+            <if test="isBind != null  and isBind != ''">and is_bind = #{isBind}</if>
+        </where>
+        Order By entry_time Desc
+    </select>
+
+    <select id="selectCldById" parameterType="Integer" resultMap="CldResult">
+        <include refid="selectCldVo"/>
+        where cld.entry_id = sys_user.user_id
+        and cld.station_id = station.station_id
+        and id = #{id}
+    </select>
+
+
+    <!--    以下是entry操作-->
+    <select id="selectCldListByEntry" parameterType="Cld" resultMap="CldResult">
+        <include refid="selectCldVo"/>
+        <where>
+            cld.entry_id = sys_user.user_id
+            and cld.station_id = station.station_id
+            and entry_id = #{entryId}
+            <!--            <if test="id != null ">and id = #{id}</if>-->
+            <if test="stampId != null  and stampId != ''">and stamp_id like "%"#{stampId}"%"</if>
+            <if test="stationName != null ">and station_name like "%"#{stationName}"%"</if>
+            <if test="createDate != null ">and create_date = #{createDate}</if>
+            <if test="disposeDate != null ">and dispose_date = #{disposeDate}</if>
+            <if test="initWeight != null  and initWeight != ''">and init_weight = #{initWeight}</if>
+            <if test="userName != null ">and user_name like "%"#{userName}"%"</if>
+            <if test="spec != null  and spec != ''">and spec =#{spec}</if>
+            <if test="price != null ">and price = #{price}</if>
+            <if test="entryTime != null ">and date_format(entry_time,'%Y-%m-%d') =
+                date_format(#{entryTime},'%Y-%m-%d')
+            </if>
+            <if test="comment != null  and comment != ''">and comment like "%"#{comment}"%"</if>
+            <if test="isBind != null  and isBind != ''">and is_bind = #{isBind}</if>
+        </where>
+    </select>
+
+    <insert id="insertCld" parameterType="Cld" useGeneratedKeys="true" keyProperty="id">
+        insert into cld
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">stamp_id,</if>
+            <if test="createDate != null ">create_date,</if>
+            <if test="disposeDate != null ">dispose_date,</if>
+            <if test="initWeight != null  and initWeight != ''">init_weight,</if>
+            <if test="entryId != null ">entry_id,</if>
+            <if test="spec != null  and spec != ''">spec,</if>
+            <if test="price != null ">price,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">#{stampId},</if>
+            <if test="createDate != null ">#{createDate},</if>
+            <if test="disposeDate != null ">#{disposeDate},</if>
+            <if test="initWeight != null  and initWeight != ''">#{initWeight},</if>
+            <if test="entryId != null ">#{entryId},</if>
+            <if test="spec != null  and spec != ''">#{spec},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+        </trim>
+    </insert>
+
+    <update id="updateCld" parameterType="Cld">
+        update cld
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stampId != null  and stampId != ''">stamp_id = #{stampId},</if>
+            <if test="stationId != null ">station_id = #{stationId},</if>
+            <if test="createDate != null ">create_date = #{createDate},</if>
+            <if test="disposeDate != null ">dispose_date = #{disposeDate},</if>
+            <if test="initWeight != null  and initWeight != ''">init_weight = #{initWeight},</if>
+            <if test="entryId != null ">entry_id = #{entryId},</if>
+            <if test="spec != null  and spec != ''">spec = #{spec},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="isBind != null  and isBind != ''">is_bind = #{isBind},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="updateBind" parameterType="String">
+        update cld
+        set is_bind = '1'
+        where stamp_id = #{stampId}
+    </update>
+
+    <update id="updateUnbind" parameterType="String">
+        update cld
+        set is_bind = '0'
+        where stamp_id = #{stampId}
+    </update>
+
+    <delete id="deleteCldById" parameterType="Integer">
+        delete
+        from cld
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteCldByIds" parameterType="String">
+        delete from cld where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
